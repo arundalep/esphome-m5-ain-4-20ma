@@ -9,13 +9,11 @@ Current Register: 0x20 (2 bytes, little-endian)
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome import pins
 from esphome.components import i2c, sensor
 from esphome.const import (
     CONF_ADDRESS,
     CONF_ID,
     CONF_I2C_ID,
-    CONF_UPDATE_INTERVAL,
     STATE_CLASS_MEASUREMENT,
     UNIT_AMPERE,
     ICON_CURRENT_AC,
@@ -34,27 +32,29 @@ M5AIN4_20MASensor = m5_ain_4_20ma_ns.class_(
     "M5AIN4_20MASensor", cg.PollingComponent, sensor.Sensor, i2c.I2CDevice
 )
 
-# Configuration schema
+# Configuration schema - extending PollingComponent to support update_interval
 CONFIG_SCHEMA = (
-    sensor.sensor_schema(
-        M5AIN4_20MASensor,
-        unit_of_measurement=UNIT_AMPERE,
-        icon=ICON_CURRENT_AC,
-        accuracy_decimals=2,
-        state_class=STATE_CLASS_MEASUREMENT,
-    )
-    .extend(
+    cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(M5AIN4_20MASensor),
-            cv.Optional(CONF_I2C_ID): cv.use_id(i2c.I2CBus),
+            cv.Required(CONF_I2C_ID): cv.use_id(i2c.I2CBus),
             cv.Optional(CONF_ADDRESS, default=0x55): cv.i2c_address,
             cv.Optional(
                 CONF_SCALING_FACTOR, default=0.01
             ): cv.float_range(min=0.0001, max=100.0),
         }
     )
+    .extend(
+        sensor.sensor_schema(
+            M5AIN4_20MASensor,
+            unit_of_measurement=UNIT_AMPERE,
+            icon=ICON_CURRENT_AC,
+            accuracy_decimals=2,
+            state_class=STATE_CLASS_MEASUREMENT,
+        )
+    )
     .extend(i2c.i2c_device_schema(0x55))
-    .extend(cv.COMPONENT_SCHEMA)
+    .extend(cv.polling_component_schema("1s"))  # Default 1 second update_interval
 )
 
 # Configuration validation and code generation
@@ -69,7 +69,3 @@ async def to_code(config):
     
     # Set the scaling factor
     cg.add(var.set_scaling_factor(config[CONF_SCALING_FACTOR]))
-    
-    # Set update interval
-    if CONF_UPDATE_INTERVAL in config:
-        cg.add(var.set_update_interval(config[CONF_UPDATE_INTERVAL]))
