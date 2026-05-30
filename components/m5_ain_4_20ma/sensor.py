@@ -10,15 +10,7 @@ Current Register: 0x20 (2 bytes, little-endian)
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import i2c, sensor
-from esphome.const import (
-    CONF_ADDRESS,
-    CONF_ID,
-    CONF_I2C_ID,
-    DEVICE_CLASS_CURRENT,
-    ICON_CURRENT_AC,
-    STATE_CLASS_MEASUREMENT,
-    UNIT_MILLIAMPERE,
-)
+from esphome.const import CONF_ADDRESS
 
 CONF_SCALING_FACTOR = "scaling_factor"
 
@@ -30,11 +22,11 @@ M5AIN4_20MASensor = m5_ain_4_20ma_ns.class_(
 CONFIG_SCHEMA = (
     sensor.sensor_schema(
         M5AIN4_20MASensor,
-        unit_of_measurement=UNIT_MILLIAMPERE,
-        icon=ICON_CURRENT_AC,
+        unit_of_measurement="mA",
+        icon="mdi:current-ac",
         accuracy_decimals=2,
-        device_class=DEVICE_CLASS_CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        device_class="current",
+        state_class="measurement",
     )
     .extend(
         {
