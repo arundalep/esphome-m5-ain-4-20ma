@@ -9,12 +9,13 @@ from esphome.components import i2c, sensor
 from esphome.const import (
     CONF_ADDRESS,
     CONF_I2C_ID,
+    CONF_ID,
     STATE_CLASS_MEASUREMENT,
     UNIT_AMPERE,
     ICON_CURRENT_AC,
 )
 
-from . import M5AIN4_20MASensor, m5_ain_4_20ma_ns
+from . import M5AIN4_20MASensor
 
 CONF_SCALING_FACTOR = "scaling_factor"
 
@@ -37,11 +38,12 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(i2c.i2c_device_schema(0x55))
+    .extend(cv.COMPONENT_SCHEMA)
 )
 
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ADDRESS])
+    var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await sensor.register_sensor(var, config)
     await i2c.register_i2c_device(var, config)
