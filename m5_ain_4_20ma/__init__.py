@@ -21,7 +21,7 @@ from esphome.const import (
     ICON_CURRENT_AC,
 )
 
-CODEOWNERS = ["@YOUR_USERNAME"]
+CODEOWNERS = ["@arundalep"]
 
 DEPENDENCIES = ["i2c"]
 
