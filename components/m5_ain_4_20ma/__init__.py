@@ -8,12 +8,12 @@ Current Register: 0x20 (2 bytes, little-endian)
 """
 
 import esphome.codegen as cg
-from esphome.components import i2c
+from esphome.components import i2c, sensor
 
 DEPENDENCIES = ["i2c"]
 
 # Namespace for the component
 m5_ain_4_20ma_ns = cg.esphome_ns.namespace("m5_ain_4_20ma")
 M5AIN4_20MASensor = m5_ain_4_20ma_ns.class_(
-    "M5AIN4_20MASensor", cg.PollingComponent, i2c.I2CDevice
+    "M5AIN4_20MASensor", cg.PollingComponent, sensor.Sensor, i2c.I2CDevice
 )
