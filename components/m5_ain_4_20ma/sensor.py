@@ -20,7 +20,7 @@ from . import M5AIN4_20MASensor
 CONF_SCALING_FACTOR = "scaling_factor"
 
 # Configuration schema for the sensor platform
-CONFIG_SCHEMA = cv.All(
+CONFIG_SCHEMA = (
     sensor.sensor_schema(
         M5AIN4_20MASensor,
         unit_of_measurement=UNIT_AMPERE,
