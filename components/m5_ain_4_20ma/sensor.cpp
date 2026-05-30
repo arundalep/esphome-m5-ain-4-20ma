@@ -1,4 +1,4 @@
-#include "m5_ain_4_20ma.h"
+#include "sensor.h"
 #include "esphome/core/log.h"
 
 namespace esphome {
@@ -24,14 +24,7 @@ void M5AIN4_20MASensor::update() {
   
   ESP_LOGV(TAG, "Reading from I2C address 0x%02X", this->address_);
   
-  // Write register address
-  if (!this->write_bytes(0x20, nullptr, 0)) {
-    ESP_LOGW(TAG, "Failed to write register address");
-    this->publish_state(NAN);
-    return;
-  }
-  
-  // Read 2 bytes (little-endian)
+  // Read 2 bytes from register 0x20 (little-endian)
   if (!this->read_bytes(0x20, data, 2)) {
     ESP_LOGW(TAG, "Failed to read data from device at 0x%02X", this->address_);
     this->publish_state(NAN);

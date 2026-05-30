@@ -65,10 +65,12 @@ async def to_code(config):
     await i2c.register_i2c_device(var, config)
 
     # Set the I2C address
-    cg.add(var.set_address(config[CONF_ADDRESS]))
+    if CONF_ADDRESS in config:
+        cg.add(var.set_address(config[CONF_ADDRESS]))
     
     # Set the scaling factor
-    cg.add(var.set_scaling_factor(config[CONF_SCALING_FACTOR]))
+    if CONF_SCALING_FACTOR in config:
+        cg.add(var.set_scaling_factor(config[CONF_SCALING_FACTOR]))
     
     # Set update interval
     if CONF_UPDATE_INTERVAL in config:
