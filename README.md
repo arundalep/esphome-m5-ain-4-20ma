@@ -26,7 +26,7 @@ ESPHome external component for the M5Stack Unit AIN 4-20mA current loop sensor i
 ### 1. Clone or Download This Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/esphome-m5-ain-4-20ma.git
+git clone https://github.com/arundalep/esphome-m5-ain-4-20ma.git
 ```
 
 Or download as ZIP and extract.
@@ -41,12 +41,12 @@ esphome:
   # ... other esphome config ...
   
   external_components:
-    - source: github://YOUR_USERNAME/esphome-m5-ain-4-20ma
+    - source: github://arundalep/esphome-m5-ain-4-20ma
       refresh: 0s
       components: [ m5_ain_4_20ma ]
 ```
 
-**Replace `YOUR_USERNAME` with your actual GitHub username!**
+
 
 ### 3. Configure I2C
 
@@ -106,7 +106,7 @@ esphome:
   board: m5stack-atom
   
   external_components:
-    - source: github://YOUR_USERNAME/esphome-m5-ain-4-20ma
+    - source: github://arundalep/esphome-m5-ain-4-20ma
       components: [ m5_ain_4_20ma ]
 
   logger:
