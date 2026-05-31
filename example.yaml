@@ -1,0 +1,237 @@
+esphome:
+  name: esphome-m5atom
+  friendly_name: Atom-Lite-AIN
+  min_version: 2026.4.0
+  name_add_mac_suffix: false
+
+esp32:
+    board: m5stack-atom 
+    framework:
+      type: esp-idf
+      
+  # Use external components from GitHub
+external_components:
+  - source: github://arundalep/esphome-m5-ain-4-20ma@v1.0.2
+    components: [m5_ain_4_20ma]
+    refresh: 0s
+    # Force fresh download to get the fixed component with update_interval support
+      
+  # Enable logging
+logger:
+  level: VERBOSE
+#    baud_rate: 115200
+
+# [Optional] - Create web interface for direct control
+web_server:
+  port: 80
+  version: 3
+  local: true
+
+
+# Enable native API for communication with Home Assistant, this can be removed if you do not plan to use it with Home Assistant
+api:
+
+# Enable OTA firmware update, you will be able to upload the firmware over WiFi without connecting the device by cables
+ota:
+  - platform: web_server
+  - platform: esphome
+
+# Setup your WiFi password
+wifi:
+  ssid: !secret SSID
+  password: !secret WIFIPASSWORD
+  #fast_connect: true
+  power_save_mode: none
+  reboot_timeout: 10 minutes
+  # Enable fallback hotspot
+  ap:
+    ssid: "Atom-Lite-AIN-Fallback"
+    password: "fallback123"  
+captive_portal:
+
+# I2C Configuration for M5 Atom Lite
+# Atom Lite: SDA=GPIO26, SCL=GPIO32
+i2c:
+  sda: 26
+  scl: 32
+  scan: true
+  id: bus_a
+
+# Status LED (built-in RGB LED on Atom Lite)
+status_led:
+  pin: GPIO27
+
+# Button sensor (M5 Lite button)
+binary_sensor:
+  - platform: gpio
+    pin: GPIO39
+    name: "Button"
+    internal: true
+
+# Text sensors for device information
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Connected SSID"
+    mac_address:
+      name: "Mac Address"
+
+# Main sensor configuration
+sensor:
+  # WiFi signal strength
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+
+  # Uptime sensor
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+  # ===== M5Stack AIN 4-20mA Custom Component =====
+  # This component reads the current value from the M5Stack AIN unit
+  # via I2C at address 0x55, register 0x20
+  - platform: m5_ain_4_20ma
+    i2c_id: bus_a
+    address: 0x55
+    update_interval: 1s
+    id: ain_current_sensor
+    name: "4-20mA Current"
+    unit_of_measurement: "mA"
+    icon: "mdi:current-ac"
+    accuracy_decimals: 2
+    # Optional: Scaling factor (default is 0.01)
+    # Adjust if readings are off by factor of 10 or 100
+    # scaling_factor: 0.01
+
+  # ===== Calibrated Current Reading =====
+  # Apply calibration using number inputs
+  - platform: template
+    name: "4-20mA Calibrated"
+    unit_of_measurement: "mA"
+    icon: "mdi:gauge"
+    accuracy_decimals: 3
+    update_interval: 2s
+    lambda: |-
+      float raw = id(ain_current_sensor).state;
+      
+      if (isnan(raw)) {
+        return NAN;
+      }
+      
+      // Apply calibration
+      float offset = id(cal_4ma_offset).state;
+      float scaling = id(cal_20ma_scaling).state;
+      
+      float calibrated = (raw + offset) * scaling;
+      return calibrated;
+
+
+
+
+
+  # ===== Example: Pressure Sensor (0-10 bar) =====
+  # For pressure sensors, uncomment and adjust range
+  # - platform: template
+  #   name: "Pressure"
+  #   unit_of_measurement: "bar"
+  #   icon: "mdi:gauge"
+  #   accuracy_decimals: 2
+  #   update_interval: 2s
+  #   lambda: |-
+  #     float current = id(sensor_4_20ma_calibrated).state;
+  #     
+  #     if (isnan(current)) {
+  #       return NAN;
+  #     }
+  #     
+  #     // Define sensor range
+  #     const float MIN_PRESSURE = 0.0;
+  #     const float MAX_PRESSURE = 10.0;
+  #     
+  #     float percentage = ((current - 4.0) / 16.0) * 100.0;
+  #     return MIN_PRESSURE + (percentage / 100.0) * (MAX_PRESSURE - MIN_PRESSURE);
+  
+  # ===== Manual I2C Test Sensor Removed =====
+  # The previous manual I2C lambda used id(bus_a)->read_bytes(...), but ESPHome's
+  # IDF I2C bus object does not expose read_bytes() directly to lambdas.
+  # The custom component above now compiles and should be used for readings.
+
+# Number sensors for calibration (adjustable from Home Assistant)
+number:
+  # 4mA calibration point adjustment
+  - platform: template
+    name: "4mA Offset"
+    id: cal_4ma_offset
+    min_value: -2.0
+    max_value: 2.0
+    step: 0.01
+    initial_value: 0.0
+    optimistic: true
+    mode: box
+    unit_of_measurement: "mA"
+    icon: "mdi:tune"
+
+  # 20mA calibration point adjustment
+  - platform: template
+    name: "20mA Scaling"
+    id: cal_20ma_scaling
+    min_value: 0.5
+    max_value: 1.5
+    step: 0.001
+    initial_value: 1.0
+    optimistic: true
+    mode: box
+    unit_of_measurement: "x"
+    icon: "mdi:tune"
+
+# Switches
+switch:
+  - platform: restart
+    name: "Restart Device"
+
+
+# ===== INSTRUCTIONS =====
+#
+# STEP 1: Create GitHub Repository
+# - Create a new GitHub repository: github.com/YOUR_USERNAME/esphome-m5-ain-4-20ma
+# - Upload the custom component files to this repository
+# - Replace "YOUR_USERNAME" in the external_components section above
+#
+# STEP 2: Repository Structure
+# Your GitHub repo should have this structure:
+# esphome-m5-ain-4-20ma/
+# ├─ components/              ← REQUIRED directory for ESPHome
+# │   └─ m5_ain_4_20ma/      ← Component files here
+# │       ├─ __init__.py     ← Python configuration (has update_interval fix)
+# │       ├─ sensor.cpp      ← C++ implementation
+# │       ├─ sensor.h        ← C++ header
+# │       └─ sensor.py       ← Python sensor interface
+# ├─ LICENSE
+# └─ README.md
+#
+# - Replace YOUR_WIFI_SSID and YOUR_WIFI_PASSWORD
+# - Generate encryption key: esphome generate-encryption-key
+# - Replace YOUR_ENCRYPTION_KEY
+# - Set OTA password
+#
+# STEP 4: Customize for Your Setup
+# - Update TANK_CAPACITY if using tank level sensor
+# - Update MAX_DEPTH if measuring depth
+# - Adjust sensor ranges as needed
+#
+# STEP 5: Calibration
+# 1. Flash this configuration to your Atom Lite
+# 2. Apply minimum signal (or no signal)
+# 3. Measure actual current with multimeter
+# 4. Compare to "4-20mA Current" sensor
+# 5. Set "4mA Offset" = actual - sensor_reading
+# 6. Apply maximum signal
+# 7. Measure actual current, set "20mA Scaling" = actual / sensor_reading
+#
+# STEP 6: Verify
+# - Check readings at various points
+# - Adjust offset and scaling as needed
+# - Verify values match your sensor specifications
