@@ -371,13 +371,10 @@ automation:
 ## FAQ
 
 **Q: Can I use multiple 4-20mA sensors?**  
-A: The M5Stack AIN unit is single-channel only. For multiple sensors, use multiple AIN units on different I2C addresses (not tested) or use a different multi-channel board.
+A: The M5Stack AIN unit is single-channel only. For multiple sensors, use multiple AIN units on different I2C addresses (not tested) or use a different multi-channel board. For 4 channel input, take a look at the Module13.2 AIN4-20mA for M5 Stack, SKU:M133.
 
 **Q: What's the maximum cable length?**  
 A: 4-20mA signals can travel 100+ meters. Use shielded cable for best results.
-
-**Q: Do I need an external power supply?**  
-A: It depends on your sensor. 4-wire sensors have their own power. 2-wire sensors need external 24V DC supply.
 
 **Q: Why use this instead of ADC + resistor?**  
 A: This provides better accuracy, isolation, and ease of use. The AIN unit handles voltage-to-current conversion and provides signal isolation.
